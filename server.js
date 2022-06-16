@@ -1,12 +1,8 @@
-const express = require("express");
-const app = express();
-// This is a public sample test API key.
-// Don’t submit any personally identifiable information in requests made with this key.
-// Sign in to see your own test API key embedded in code samples.
-const stripe = require("stripe")('sk_test_51KnpjyGC5CZPzSfGi95F4MeAMsHqt5Zh8M2hfRS3pInYp5pC7VfpDgHCXVfrnk0zErBA7k0Uubit55XZzryhYPhQ004eWSqxr5');
+ 
+const stripe = require('stripe')('sk_test_51KnpjyGC5CZPzSfGi95F4MeAMsHqt5Zh8M2hfRS3pInYp5pC7VfpDgHCXVfrnk0zErBA7k0Uubit55XZzryhYPhQ004eWSqxr5');
+// This example sets up an endpoint using the Express framework.
+// Watch this video to get started: https://youtu.be/rPR2aJ6XnAc.
 
-app.use(express.static("public"));
-app.use(express.json());
 
 const calculateOrderAmount = (items) => {
   // Replace this constant with a calculation of the order's amount
@@ -18,29 +14,26 @@ const calculateOrderAmount = (items) => {
   return items[0].amount;
 };
 
-app.post("/create-payment-intent", async (req, res) => {
-  const { items } = req.body;
-  const { currency } = req.body;
-  // Create a PaymentIntent with the order amount and currency
+app.post('/payment-sheet', async (req, res) => {
+  // Use an existing Customer ID if this is a returning customer.
+  const customer = await stripe.customers.create();
+  const ephemeralKey = await stripe.ephemeralKeys.create(
+    {customer: customer.id},
+    {apiVersion: '2020-08-27'}
+  );
   const paymentIntent = await stripe.paymentIntents.create({
     amount: calculateOrderAmount(items),
-    currency: currency,
+    currency: 'mxn',
+    customer: customer.id,
     automatic_payment_methods: {
       enabled: true,
     },
   });
 
-  res.send({
-    clientSecret: paymentIntent.client_secret,
+  res.json({
+    paymentIntent: paymentIntent.client_secret,
+    ephemeralKey: ephemeralKey.secret,
+    customer: customer.id,
+    publishableKey: 'pk_test_51KnpjyGC5CZPzSfGrv3rhilqycFro7CnKiCD3Tq0Kk6ybIse3gfcCHF2y10cT9wQJDdsffgd4cHgEIzyU1vOqCrp00WAeTQXg7'
   });
 });
-
-
-app.get('/', function (req, res) {
-  res.send('Hello World!');
-});
-
-const PORT = process.env.PORT || 5001 ;
-app.set('port', process.env.PORT)
-
-app.listen(PORT, () => console.log("PUERTO CHIDO"));

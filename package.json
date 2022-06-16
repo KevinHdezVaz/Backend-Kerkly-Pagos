@@ -11,7 +11,7 @@
   "description": "",
   "dependencies": {
     "express": "^4.18.1",
-    "stripe": "^9.2.0"
+    "stripe": "^9.8.0"
   },
   "engines": {
     "node": "16.x"
